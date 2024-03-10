@@ -100,7 +100,7 @@ std::string Table::getAttribute(size_t entityIndex, size_t attributeIndex) const
 void Table::writeTableFile(const std::string& path) {
 	std::ofstream ListFile(path);
 	if (ListFile.is_open()) {
-		ListFile << attributeSize << '\n' << recordSize << '\n';
+		ListFile << attributeSize << '\n' << recordSize << '\n' << entityName << '\n';
 		for (const std::string& str : attributeNames) {
 			ListFile << str << '\n';
 		}
@@ -125,6 +125,8 @@ void Table::readTableFile(const std::string& path) {
 		attributeSize = std::stoul(line);
 		std::getline(ListFile, line);
 		recordSize = std::stoul(line);
+		std::getline(ListFile, line);
+		entityName = line;
 		std::string attribute;
 		for (size_t i = 0; i < attributeSize; ++i) {
 			std::getline(ListFile, line);

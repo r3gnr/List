@@ -5,7 +5,7 @@ int main() {
     Table table;
 
     while (true) {
-        std::cout << "1 open 2 save 3 add entity 4 add attribute 5 set attribute 6 delete entity 7 delete attribute 8 get table 9 get entity name 10 set entity name" << std::endl;
+        std::cout << "1 open 2 save 3 add entity 4 add attribute 5 set attribute\n 6 delete entity 7 delete attribute 8 get table 9 get entity name 10 set entity name" << std::endl;
         int choice = 0;
         std::cin >> choice;
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
