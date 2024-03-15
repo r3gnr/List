@@ -147,3 +147,7 @@ void Table::readTableFile(const std::string& path) {
 		throw std::runtime_error("Error opening a file for reading: " + path);
 	}
 }
+
+void Table::renameAttribute(size_t attributeIndex, const std::string& name) {
+	attributeNames[attributeIndex] = name;
+}

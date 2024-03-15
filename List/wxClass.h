@@ -29,6 +29,7 @@ private:
     void DeleteAttribute(wxCommandEvent& event);
     void OnCellChanged(wxGridEvent& event);
     void SetTableName(wxCommandEvent& event);
+    void RenameAttribute(wxCommandEvent& event);
 };
 
 enum {
@@ -39,6 +40,7 @@ enum {
     ID_DeleteRecord = 5,
     ID_DeleteAttribute = 6,
     ID_SetTableName = 7,
+    ID_RenameAttribute = 8,
 };
 
 #endif

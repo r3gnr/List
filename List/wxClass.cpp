@@ -32,6 +32,8 @@ MyFrame::MyFrame()
                  "Delete Attribute");
     menuControl->Append(ID_SetTableName, "Set Table Name\tCtrl-N",
              "Set Table Name");
+    menuControl->Append(ID_RenameAttribute, "RenameAttribute\tCtrl-J",
+         "RenameAttribute");
 
     wxMenu* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
@@ -51,6 +53,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::DeleteRecord, this, ID_DeleteRecord);
     Bind(wxEVT_MENU, &MyFrame::DeleteAttribute, this, ID_DeleteAttribute);
     Bind(wxEVT_MENU, &MyFrame::SetTableName, this, ID_SetTableName);
+    Bind(wxEVT_MENU, &MyFrame::RenameAttribute, this, ID_RenameAttribute);
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
@@ -157,13 +160,17 @@ void MyFrame::DeleteRecord(wxCommandEvent & event) {
         grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
         grid->SetCellHighlightPenWidth(true);
     }
-    wxTextEntryDialog dialog(this, "Enter Record Index", "Title", "");
+    wxTextEntryDialog dialog(this, "Enter Record Index (starting from 0)", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
     wxString name = dialog.GetValue();
     int recordIndex;
     name.ToInt(&recordIndex);
+    if (recordIndex >= table.getRecordSize() || recordIndex < 0) {
+        DrawGrid();
+        return;
+    }
     table.deleteRecord(recordIndex);
     DrawGrid();
 }
@@ -174,23 +181,46 @@ void MyFrame::DeleteAttribute(wxCommandEvent& event) {
         grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
         grid->SetCellHighlightPenWidth(true);
     }
-    wxTextEntryDialog dialog(this, "Enter Attribute Index", "Title", "");
+    wxTextEntryDialog dialog(this, "Enter Attribute Index (starting from 0)", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
     wxString name = dialog.GetValue();
     int attributeIndex;
     name.ToInt(&attributeIndex);
+    if (attributeIndex >= table.getAttributeSize() || attributeIndex < 0) {
+        DrawGrid();
+        return;
+    }
     table.deleteAttribute(attributeIndex);
     DrawGrid();
 }
 
 void MyFrame::SetTableName(wxCommandEvent& event) {
-    wxTextEntryDialog dialog(this, "Enter Attribute Name", "Title", "");
+    wxTextEntryDialog dialog(this, "Enter Table Name", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
     wxString name = dialog.GetValue();
     table.setEntityName(name.ToStdString());
     SetStatusText(table.getEntityName());
+}
+
+void MyFrame::RenameAttribute(wxCommandEvent& event) {
+    wxTextEntryDialog dialogIndex(this, "Enter Attribute Index (starting from 0)", "Title", "");
+    if (dialogIndex.ShowModal() == wxID_CANCEL)
+        return;
+    wxString index = dialogIndex.GetValue();
+    int attributeIndex;
+    index.ToInt(&attributeIndex);
+    if (attributeIndex >= table.getAttributeSize() || attributeIndex < 0) {
+        DrawGrid();
+        return;
+    }
+    wxTextEntryDialog dialog(this, "Enter Attribute Name", "Title", "");
+    if (dialog.ShowModal() == wxID_CANCEL)
+        return;
+    wxString name = dialog.GetValue();
+    table.renameAttribute(attributeIndex, name.ToStdString());
+    DrawGrid();
 }

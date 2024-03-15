@@ -26,6 +26,7 @@ public:
 	std::string getAttributeName(size_t attributeIndex) const;
 	void writeTableFile(const std::string& path);
 	void readTableFile(const std::string& path);
+	void renameAttribute(size_t attributeIndex, const std::string& name);
 private:
 	std::string entityName = "";
 	size_t attributeSize = 0;
