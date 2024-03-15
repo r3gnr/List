@@ -32,8 +32,8 @@ MyFrame::MyFrame()
                  "Delete Attribute");
     menuControl->Append(ID_SetTableName, "Set Table Name\tCtrl-N",
              "Set Table Name");
-    menuControl->Append(ID_RenameAttribute, "RenameAttribute\tCtrl-J",
-         "RenameAttribute");
+    menuControl->Append(ID_RenameAttribute, "Rename Attribute\tCtrl-J",
+         "Rename Attribute");
 
     wxMenu* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
