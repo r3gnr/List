@@ -127,13 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="TableClass.cpp" />
+    <ClCompile Include="table.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="wxClass.cpp" />
+    <ClCompile Include="wx_gui.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TableClass.h" />
-    <ClInclude Include="wxClass.h" />
+    <ClInclude Include="table.h" />
+    <ClInclude Include="wx_gui.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

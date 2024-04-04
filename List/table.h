@@ -1,5 +1,5 @@
-#ifndef TABLECLASS_H
-#define TABLECLASS_H
+#ifndef TABLE_H
+#define TABLE_H
 
 #include <string>
 #include <vector>

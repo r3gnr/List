@@ -1,4 +1,4 @@
-#include "wxClass.h"
+#include "wx_gui.h"
 
 bool MyApp::OnInit() {
     MyFrame* frame = new MyFrame();

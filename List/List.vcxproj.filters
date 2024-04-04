@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TableClass.cpp">
+    <ClCompile Include="table.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="wxClass.cpp">
+    <ClCompile Include="wx_gui.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TableClass.h">
+    <ClInclude Include="table.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="wxClass.h">
+    <ClInclude Include="wx_gui.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

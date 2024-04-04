@@ -1,4 +1,4 @@
-#include "TableClass.h"
+#include "table.h"
 
 Table::Table(std::string entityName, int recordSize, int attributeSize) {
 	setEntityName(this->entityName);

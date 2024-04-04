@@ -1,5 +1,5 @@
-#include "wxClass.h"
-#include "TableClass.h"
+#include "wx_gui.h"
+#include "table.h"
 #include <iostream>
  
  

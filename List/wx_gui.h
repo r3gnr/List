@@ -3,7 +3,7 @@
 
 #include <wx/wx.h>
 #include <wx/grid.h>
-#include "TableClass.h"
+#include "table.h"
 
 class MyApp : public wxApp {
 public:
