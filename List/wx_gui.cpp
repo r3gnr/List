@@ -70,10 +70,6 @@ void MyFrame::OnAbout(wxCommandEvent& event) {
                  "About", wxOK | wxICON_INFORMATION);
 }
 
-void MyFrame::OnHello(wxCommandEvent& event) {
-    wxLogMessage("Hello world from wxWidgets!");
-}
-
 void MyFrame::OnOpen(wxCommandEvent& event) {
     if (grid) {
         grid->Destroy();
