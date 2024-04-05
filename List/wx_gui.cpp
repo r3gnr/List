@@ -17,6 +17,8 @@ MyFrame::MyFrame()
     SetMinClientSize(wxSize(400, 300));
 
     wxMenu* menuFile = new wxMenu;
+    menuFile->Append(ID_New, "&New\tCtrl-N",
+                     "Create New Table");
     menuFile->Append(ID_Open, "&Open...\tCtrl-O",
                      "Open File");
     menuFile->Append(ID_Save, "&Save...\tCtrl-S",
@@ -33,7 +35,7 @@ MyFrame::MyFrame()
                  "Delete Record");
     menuControl->Append(ID_DeleteAttribute, "Delete Attribute\tCtrl-D",
                  "Delete Attribute");
-    menuControl->Append(ID_SetTableName, "Set Table Name\tCtrl-N",
+    menuControl->Append(ID_SetTableName, "Set Table Name\tCtrl-K",
              "Set Table Name");
     menuControl->Append(ID_RenameAttribute, "Rename Attribute\tCtrl-J",
          "Rename Attribute");
@@ -50,6 +52,7 @@ MyFrame::MyFrame()
     CreateStatusBar();
     SetStatusText(table.getEntityName());
 
+    Bind(wxEVT_MENU, &MyFrame::OnNew, this, ID_New);
     Bind(wxEVT_MENU, &MyFrame::AddRecord, this, ID_AddRecord);
     Bind(wxEVT_MENU, &MyFrame::AddAttribute, this, ID_AddAttribute);
     Bind(wxEVT_MENU, &MyFrame::DeleteRecord, this, ID_DeleteRecord);
@@ -63,6 +66,22 @@ MyFrame::MyFrame()
 
     Bind(wxEVT_CLOSE_WINDOW, &MyFrame::OnCloseWindow, this);
 
+}
+
+void MyFrame::OnNew(wxCommandEvent& event) {
+    if (!table.isSaved()) {
+        if (MyFrame::HandleUnsavedData() == false) {
+            return;
+        }
+    }
+    table.clear();
+    if (grid) {
+        grid->Destroy();
+        grid = new wxGrid(this, wxID_ANY);
+        grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
+        grid->SetCellHighlightPenWidth(true);
+    }
+    DrawGrid();
 }
 
 void MyFrame::OnCloseWindow(wxCloseEvent& event) {

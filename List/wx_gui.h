@@ -32,17 +32,19 @@ private:
     void SetTableName(wxCommandEvent& event);
     void RenameAttribute(wxCommandEvent& event);
     bool HandleUnsavedData();
+    void OnNew(wxCommandEvent& event);
 };
 
 enum {
-    ID_Open = 1,
-    ID_Save = 2,
-    ID_AddRecord = 3,
-    ID_AddAttribute = 4,
-    ID_DeleteRecord = 5,
-    ID_DeleteAttribute = 6,
-    ID_SetTableName = 7,
-    ID_RenameAttribute = 8,
+    ID_New = 1,
+    ID_Open = 2,
+    ID_Save = 3,
+    ID_AddRecord = 4,
+    ID_AddAttribute = 5,
+    ID_DeleteRecord = 6,
+    ID_DeleteAttribute = 7,
+    ID_SetTableName = 8,
+    ID_RenameAttribute = 9,
 };
 
 #endif
