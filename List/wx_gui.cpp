@@ -15,6 +15,7 @@ MyFrame::MyFrame()
     sizer->Add(grid, 1, wxEXPAND);
     SetSizer(sizer);
     SetMinClientSize(wxSize(400, 300));
+    grid->CreateGrid(0, 0);
     
     wxMenu* menuFile = new wxMenu;
     menuFile->Append(ID_New, "&New\tCtrl-N",
@@ -75,12 +76,8 @@ void MyFrame::OnNew(wxCommandEvent& event) {
         }
     }
     table.clear();
-    if (grid) {
-        grid->Destroy();
-        grid = new wxGrid(this, wxID_ANY);
-        grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
-        grid->SetCellHighlightPenWidth(true);
-    }
+    grid->DeleteRows(0, grid->GetNumberRows());
+    grid->DeleteCols(0, grid->GetNumberCols());
     DrawGrid();
 }
 
@@ -130,13 +127,6 @@ void MyFrame::OnOpen(wxCommandEvent& event) {
             return;
         }
     }
-    if (grid) {
-        grid->Destroy();
-        grid = new wxGrid(this, wxID_ANY);
-        grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
-        grid->SetCellHighlightPenWidth(true);
-    }
-
     
     wxString wildcard = "All files (*.*)|*.*";
     wxFileDialog openFileDialog(this, _("Open File"), "", "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
@@ -145,6 +135,12 @@ void MyFrame::OnOpen(wxCommandEvent& event) {
         return;
     wxString filePath = openFileDialog.GetPath();
     table.readTableFile(filePath.ToStdString());
+    size_t numRows = table.getRecordSize();
+    size_t numCols = table.getAttributeSize();
+    grid->DeleteRows(0, grid->GetNumberRows());
+    grid->DeleteCols(0, grid->GetNumberCols());
+    grid->AppendRows(numRows);
+    grid->AppendCols(numCols);
     DrawGrid();
     SetStatusText(table.getEntityName());
 }
@@ -166,14 +162,12 @@ void MyFrame::DrawGrid() {
     int windowWidth, windowHeight;
     GetClientSize(&windowWidth, &windowHeight);
     int columnWidth = windowWidth / (numColumns == 0 ? 1 : numColumns) - grid->GetDefaultRowLabelSize() / (numColumns == 0 ? 1 : numColumns) - 17 / (numColumns == 0 ? 1 : numColumns);
-    grid->CreateGrid(table.getRecordSize(), numColumns);
     for (size_t i = 0; i < numColumns; ++i) {
         grid->SetColSize(i, columnWidth);
         grid->SetColLabelValue(i, table.getAttributeName(i));
     }
     for (size_t i = 0; i < table.getRecordSize(); ++i) {
         for (size_t j = 0; j < numColumns; ++j) {
-         //   grid->SetCellValue(i, j, wxString::FromUTF8(table.getAttribute(i, j).c_str()));
             grid->SetCellValue(i, j, table.getAttribute(i, j));
         }
     }
@@ -189,27 +183,21 @@ void MyFrame::DrawGrid() {
 }
 
 void MyFrame::AddRecord(wxCommandEvent& event) {
-    if (grid) {
-        grid->Destroy();
-        grid = new wxGrid(this, wxID_ANY);
-    }
+    size_t newRowIndex = table.getRecordSize();
     table.addRecord();
+    grid->InsertRows(newRowIndex);
     DrawGrid();
 }
 
 void MyFrame::AddAttribute(wxCommandEvent& event) {
-    if (grid) {
-        grid->Destroy();
-        grid = new wxGrid(this, wxID_ANY);
-        grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
-        grid->SetCellHighlightPenWidth(true);
-    }
     wxTextEntryDialog dialog(this, "Enter Attribute Name", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
     wxString name = dialog.GetValue();
+    size_t newColumnIndex = table.getAttributeSize() ;
     table.addAttribute(name.ToStdString());
+    grid->InsertCols(newColumnIndex);
     DrawGrid();
 }
 
@@ -222,45 +210,35 @@ void MyFrame::OnCellChanged(wxGridEvent& event) {
 }
 
 void MyFrame::DeleteRecord(wxCommandEvent& event) {
-    if (grid) {
-        grid->Destroy();
-        grid = new wxGrid(this, wxID_ANY);
-        grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
-        grid->SetCellHighlightPenWidth(true);
-    }
     wxTextEntryDialog dialog(this, "Enter Record Index (starting from 0)", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
-    wxString name = dialog.GetValue();
-    int recordIndex;
-    name.ToInt(&recordIndex);
-    if (recordIndex >= table.getRecordSize() || recordIndex < 0) {
-        DrawGrid();
+    wxString indexStr = dialog.GetValue();
+    long recordIndex;
+    if (!indexStr.ToLong(&recordIndex) || recordIndex < 0 || recordIndex >= static_cast<long>(table.getRecordSize())) {
+        wxMessageBox("Invalid record index", "Error", wxOK | wxICON_ERROR);
         return;
     }
-    table.deleteRecord(recordIndex);
+    table.deleteRecord(static_cast<size_t>(recordIndex));
+    grid->DeleteRows(recordIndex);
     DrawGrid();
 }
 void MyFrame::DeleteAttribute(wxCommandEvent& event) {
-    if (grid) {
-        grid->Destroy();
-        grid = new wxGrid(this, wxID_ANY);
-        grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
-        grid->SetCellHighlightPenWidth(true);
-    }
     wxTextEntryDialog dialog(this, "Enter Attribute Index (starting from 0)", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
-    wxString name = dialog.GetValue();
-    int attributeIndex;
-    name.ToInt(&attributeIndex);
-    if (attributeIndex >= table.getAttributeSize() || attributeIndex < 0) {
-        DrawGrid();
+
+    wxString indexStr = dialog.GetValue();
+    long attributeIndex;
+    if (!indexStr.ToLong(&attributeIndex) || attributeIndex < 0 || attributeIndex >= static_cast<long>(table.getAttributeSize())) {
+        wxMessageBox("Invalid attribute index", "Error", wxOK | wxICON_ERROR);
         return;
     }
-    table.deleteAttribute(attributeIndex);
+
+    table.deleteAttribute(static_cast<size_t>(attributeIndex));
+    grid->DeleteCols(attributeIndex);
     DrawGrid();
 }
 
