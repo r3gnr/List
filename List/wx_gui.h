@@ -17,8 +17,10 @@ public:
 private:
     wxGrid* grid;
     Table table;
+    void OnCloseWindow(wxCloseEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
+    void SaveFile();
     void OnOpen(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
     void DrawGrid();
@@ -29,6 +31,7 @@ private:
     void OnCellChanged(wxGridEvent& event);
     void SetTableName(wxCommandEvent& event);
     void RenameAttribute(wxCommandEvent& event);
+    bool HandleUnsavedData();
 };
 
 enum {

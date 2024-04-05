@@ -27,12 +27,14 @@ public:
 	void writeTableFile(const std::string& path);
 	void readTableFile(const std::string& path);
 	void renameAttribute(size_t attributeIndex, const std::string& name);
+	bool isSaved() const;
 private:
 	std::string entityName = "";
 	size_t attributeSize = 0;
 	size_t recordSize = 0;
 	std::vector<std::string> attributeNames;
 	std::vector<std::vector<std::string>> tableMatrix;
+	bool saved = true;
 };
 
 #endif

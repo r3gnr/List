@@ -2,6 +2,10 @@
 
 Table::Table(std::string entityName, int recordSize, int attributeSize) {
 	setEntityName(this->entityName);
+	saved = false;
+	if (entityName == "" && recordSize == 0 && attributeSize == 0) {
+		saved = true;
+	}
 }
 
 Table::Table(const Table& table) {
@@ -21,6 +25,7 @@ Table::Table(const Table& table) {
 			tableMatrix[i][j] = table.tableMatrix[i][j];
 		}
 	}
+	saved = false;
 }
 
 std::string Table::getEntityName() const {
@@ -29,6 +34,7 @@ std::string Table::getEntityName() const {
 
 void Table::setEntityName(const std::string& name) {
 	entityName = name;
+	saved = false;
 }
 
 size_t Table::getAttributeSize() const {
@@ -49,6 +55,7 @@ void Table::addAttribute(std::string name, std::string value) {
 	for (std::vector<std::string>& entity : tableMatrix) {
 		entity.push_back(value);
 	}
+	saved = false;
 }
 
 void Table::addAttribute(std::string name, int value) {
@@ -57,6 +64,7 @@ void Table::addAttribute(std::string name, int value) {
 	for (std::vector<std::string>& entity : tableMatrix) {
 		entity.push_back(std::to_string(value));
 	}
+	saved = false;
 }
 
 void Table::addRecord(std::vector<std::string> entity) {
@@ -64,6 +72,7 @@ void Table::addRecord(std::vector<std::string> entity) {
 	temp.insert(temp.end(), entity.begin(), entity.end());
 	tableMatrix.push_back(temp);
 	++recordSize;
+	saved = false;
 }
 void Table::deleteAttribute(size_t attributeIndex) {
 	attributeNames.erase(attributeNames.begin() + attributeIndex);
@@ -71,17 +80,21 @@ void Table::deleteAttribute(size_t attributeIndex) {
 		entity.erase(entity.begin() + attributeIndex);
 	}
 	--attributeSize;
+	saved = false;
 }
 void Table::deleteRecord(size_t entityIndex) {
 	tableMatrix.erase(tableMatrix.begin() + entityIndex);
 	--recordSize;
+	saved = false;
 }
 void Table::setAttribute(size_t entityIndex, size_t attributeIndex, std::string value) {
 	tableMatrix[entityIndex][attributeIndex] = value;
+	saved = false;
 }
 
 void Table::setAttribute(size_t entityIndex, size_t attributeIndex, int value) {
 	tableMatrix[entityIndex][attributeIndex] = std::to_string(value);
+	saved = false;
 }
 
 
@@ -89,6 +102,7 @@ void Table::setRecord(size_t entityIndex, std::vector<std::string> entity) {
 	for (size_t i = 0; i < entity.size(); ++i) {
 		tableMatrix[entityIndex][i] = entity[i];
 	}
+	saved = false;
 }
 std::vector<std::string> Table::getRecord(size_t entityIndex) const {
 	return tableMatrix[entityIndex];
@@ -109,6 +123,7 @@ void Table::writeTableFile(const std::string& path) {
 				ListFile << str << '\n';
 			}
 		}
+		saved = true;
 		ListFile.close();
 	} else {
 		throw std::runtime_error("Error opening a file for writing: " + path);
@@ -142,6 +157,7 @@ void Table::readTableFile(const std::string& path) {
 				tableMatrix[i][j] = line;
 			}
 		}
+		saved = true;
 		ListFile.close();
 	} else {
 		throw std::runtime_error("Error opening a file for reading: " + path);
@@ -150,4 +166,9 @@ void Table::readTableFile(const std::string& path) {
 
 void Table::renameAttribute(size_t attributeIndex, const std::string& name) {
 	attributeNames[attributeIndex] = name;
+	saved = false;
+}
+
+bool Table::isSaved() const {
+	return saved;
 }

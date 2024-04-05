@@ -59,15 +59,48 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
 
+    Bind(wxEVT_CLOSE_WINDOW, &MyFrame::OnCloseWindow, this);
+
+}
+
+void MyFrame::OnCloseWindow(wxCloseEvent& event) {
+    if (!table.isSaved()) {
+        if (HandleUnsavedData() == false) {
+            event.Veto();
+            return;
+        }
+    }
+    event.Skip();
 }
 
 void MyFrame::OnExit(wxCommandEvent& event) {
+    if (!table.isSaved()) { 
+        if (MyFrame::HandleUnsavedData() == false) {
+            return;
+        }
+    }
     Close(true);
 }
 
 void MyFrame::OnAbout(wxCommandEvent& event) {
     wxMessageBox("Simple Table Program",
                  "About", wxOK | wxICON_INFORMATION);
+}
+
+bool MyFrame::HandleUnsavedData() {
+    switch (wxMessageBox("You have unsaved data. Do you want to save?",
+        "Unsaved data", wxYES_NO | wxCANCEL)) {
+    case wxYES:
+        SaveFile();
+        return true;
+        break;
+    case wxNO:
+        return true;
+        break;
+    case wxCANCEL:
+        return false;
+        break;
+    }
 }
 
 void MyFrame::OnOpen(wxCommandEvent& event) {
@@ -90,15 +123,16 @@ void MyFrame::OnOpen(wxCommandEvent& event) {
     SetStatusText(table.getEntityName());
 }
 
-void MyFrame::OnSave(wxCommandEvent& event) {
+void MyFrame::SaveFile() {
     wxString wildcard = "Text files (*.txt)|*.txt";
     wxFileDialog saveFileDialog(this, _("Save File"), "", "", wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-    if (saveFileDialog.ShowModal() == wxID_CANCEL)
-        return;
-
+    if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
     wxString filePath = saveFileDialog.GetPath();
-
     table.writeTableFile(filePath.ToStdString());
+}
+
+void MyFrame::OnSave(wxCommandEvent& event) {
+    SaveFile();
 }
 
 void MyFrame::DrawGrid() {
