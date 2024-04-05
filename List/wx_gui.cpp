@@ -106,6 +106,11 @@ bool MyFrame::HandleUnsavedData() {
 }
 
 void MyFrame::OnOpen(wxCommandEvent& event) {
+    if (!table.isSaved()) {
+        if (MyFrame::HandleUnsavedData() == false) {
+            return;
+        }
+    }
     if (grid) {
         grid->Destroy();
         grid = new wxGrid(this, wxID_ANY);
