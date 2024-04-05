@@ -8,10 +8,13 @@ bool MyApp::OnInit() {
 
 MyFrame::MyFrame()
     : wxFrame(nullptr, wxID_ANY, "List") {
-
+    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     grid = new wxGrid(this, wxID_ANY);
     grid->Connect(wxEVT_GRID_CELL_CHANGED, wxGridEventHandler(MyFrame::OnCellChanged), nullptr, this);
     grid->SetCellHighlightPenWidth(true);
+    sizer->Add(grid, 1, wxEXPAND);
+    SetSizer(sizer);
+    SetMinClientSize(wxSize(400, 300));
 
     wxMenu* menuFile = new wxMenu;
     menuFile->Append(ID_Open, "&Open...\tCtrl-O",
@@ -44,7 +47,6 @@ MyFrame::MyFrame()
     menuBar->Append(menuHelp, "&Help");
 
     SetMenuBar(menuBar);
-
     CreateStatusBar();
     SetStatusText(table.getEntityName());
 
@@ -136,18 +138,29 @@ void MyFrame::OnSave(wxCommandEvent& event) {
 }
 
 void MyFrame::DrawGrid() {
-    grid->CreateGrid(table.getRecordSize(), table.getAttributeSize());
-    for (size_t i = 0; i < table.getAttributeSize(); ++i) {
+    int numColumns = table.getAttributeSize();
+    int windowWidth, windowHeight;
+    GetClientSize(&windowWidth, &windowHeight);
+    int columnWidth = windowWidth / (numColumns == 0 ? 1 : numColumns) - grid->GetDefaultRowLabelSize() / (numColumns == 0 ? 1 : numColumns) - 17 / (numColumns == 0 ? 1 : numColumns);
+    grid->CreateGrid(table.getRecordSize(), numColumns);
+    for (size_t i = 0; i < numColumns; ++i) {
+        grid->SetColSize(i, columnWidth);
         grid->SetColLabelValue(i, table.getAttributeName(i));
     }
     for (size_t i = 0; i < table.getRecordSize(); ++i) {
-        for (size_t j = 0; j < table.getAttributeSize(); ++j) {
+        for (size_t j = 0; j < numColumns; ++j) {
             grid->SetCellValue(i, j, wxString::FromUTF8(table.getAttribute(i, j).c_str()));
         }
     }
-    grid->AutoSize();
-    grid->InvalidateBestSize();
-    SetClientSize(grid->GetBestSize());
+    grid->SetScrollRate(16, 16);
+    size_t gridRowSize = 0;
+    for (size_t i = 0; i < table.getRecordSize(); ++i) {
+        gridRowSize += grid->GetRowSize(i);
+    }
+    grid->SetVirtualSize(windowWidth, gridRowSize ? gridRowSize : 1);
+    grid->SetSize(windowWidth, windowHeight);
+    CreateStatusBar();
+    SetStatusText(table.getEntityName());
 }
 
 void MyFrame::AddRecord(wxCommandEvent& event) {
@@ -183,7 +196,7 @@ void MyFrame::OnCellChanged(wxGridEvent& event) {
     DrawGrid();
 }
 
-void MyFrame::DeleteRecord(wxCommandEvent & event) {
+void MyFrame::DeleteRecord(wxCommandEvent& event) {
     if (grid) {
         grid->Destroy();
         grid = new wxGrid(this, wxID_ANY);
