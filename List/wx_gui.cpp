@@ -15,7 +15,7 @@ MyFrame::MyFrame()
     sizer->Add(grid, 1, wxEXPAND);
     SetSizer(sizer);
     SetMinClientSize(wxSize(400, 300));
-
+    
     wxMenu* menuFile = new wxMenu;
     menuFile->Append(ID_New, "&New\tCtrl-N",
                      "Create New Table");
@@ -173,7 +173,8 @@ void MyFrame::DrawGrid() {
     }
     for (size_t i = 0; i < table.getRecordSize(); ++i) {
         for (size_t j = 0; j < numColumns; ++j) {
-            grid->SetCellValue(i, j, wxString::FromUTF8(table.getAttribute(i, j).c_str()));
+         //   grid->SetCellValue(i, j, wxString::FromUTF8(table.getAttribute(i, j).c_str()));
+            grid->SetCellValue(i, j, table.getAttribute(i, j));
         }
     }
     grid->SetScrollRate(16, 16);
