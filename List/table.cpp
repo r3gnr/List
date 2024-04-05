@@ -172,3 +172,12 @@ void Table::renameAttribute(size_t attributeIndex, const std::string& name) {
 bool Table::isSaved() const {
 	return saved;
 }
+
+void Table::clear() {
+	entityName = "";
+	attributeSize = 0;
+	recordSize = 0;
+	attributeNames.clear();
+	tableMatrix.clear();
+	saved = true;
+}

@@ -28,6 +28,7 @@ public:
 	void readTableFile(const std::string& path);
 	void renameAttribute(size_t attributeIndex, const std::string& name);
 	bool isSaved() const;
+	void clear();
 private:
 	std::string entityName = "";
 	size_t attributeSize = 0;
