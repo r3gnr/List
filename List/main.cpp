@@ -1,6 +1,4 @@
 #include "wx_gui.h"
-#include "table.h"
-#include <iostream>
- 
+#include <wx/app.h>
  
 wxIMPLEMENT_APP(MyApp);
