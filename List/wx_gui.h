@@ -17,6 +17,7 @@ public:
 private:
     wxGrid* grid;
     Table table;
+    char delimiter = ';';
     void OnCloseWindow(wxCloseEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
@@ -24,27 +25,25 @@ private:
     void OnOpen(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
     void DrawGrid();
-    void AddRecord(wxCommandEvent& event);
-    void AddAttribute(wxCommandEvent& event);
-    void DeleteRecord(wxCommandEvent& event);
-    void DeleteAttribute(wxCommandEvent& event);
+    void AddRow(wxCommandEvent& event);
+    void AddColumn(wxCommandEvent& event);
+    void DeleteRow(wxCommandEvent& event);
+    void DeleteColumn(wxCommandEvent& event);
     void OnCellChanged(wxGridEvent& event);
-    void SetTableName(wxCommandEvent& event);
-    void RenameAttribute(wxCommandEvent& event);
     bool HandleUnsavedData();
     void OnNew(wxCommandEvent& event);
+    void ChangeDelimiter(wxCommandEvent& event);
 };
 
 enum {
     ID_New = 1,
     ID_Open = 2,
     ID_Save = 3,
-    ID_AddRecord = 4,
-    ID_AddAttribute = 5,
-    ID_DeleteRecord = 6,
-    ID_DeleteAttribute = 7,
-    ID_SetTableName = 8,
-    ID_RenameAttribute = 9,
+    ID_AddRow = 4,
+    ID_AddColumn = 5,
+    ID_DeleteRow = 6,
+    ID_DeleteColumn = 7,
+    ID_ChangeDelimiter = 8,
 };
 
 #endif

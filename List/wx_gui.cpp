@@ -15,6 +15,7 @@ MyFrame::MyFrame()
     sizer->Add(grid, 1, wxEXPAND);
     SetSizer(sizer);
     SetMinClientSize(wxSize(400, 300));
+    Maximize(true);
     grid->CreateGrid(0, 0);
     
     wxMenu* menuFile = new wxMenu;
@@ -28,18 +29,16 @@ MyFrame::MyFrame()
     menuFile->Append(wxID_EXIT);
 
     wxMenu* menuControl = new wxMenu;
-    menuControl->Append(ID_AddRecord, "Add Record\tCtrl-R",
-                     "Add Record");
-    menuControl->Append(ID_AddAttribute, "Add Attribute\tCtrl-T",
-                 "Add Attribute");
-    menuControl->Append(ID_DeleteRecord, "Delete Record\tCtrl-Y",
-                 "Delete Record");
-    menuControl->Append(ID_DeleteAttribute, "Delete Attribute\tCtrl-D",
-                 "Delete Attribute");
-    menuControl->Append(ID_SetTableName, "Set Table Name\tCtrl-K",
-             "Set Table Name");
-    menuControl->Append(ID_RenameAttribute, "Rename Attribute\tCtrl-J",
-         "Rename Attribute");
+    menuControl->Append(ID_AddRow, "Add Row\tCtrl-R",
+                     "Add Row");
+    menuControl->Append(ID_AddColumn, "Add Column\tCtrl-T",
+                 "Add Column");
+    menuControl->Append(ID_DeleteRow, "Delete Row\tCtrl-Y",
+                 "Delete Row");
+    menuControl->Append(ID_DeleteColumn, "Delete Column\tCtrl-D",
+                 "Delete Column");
+    menuControl->Append(ID_ChangeDelimiter, "Change Delimiter\tCtrl-L",
+                 "Change Delimiter");
 
     wxMenu* menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
@@ -51,19 +50,18 @@ MyFrame::MyFrame()
 
     SetMenuBar(menuBar);
     CreateStatusBar();
-    SetStatusText(table.getEntityName());
+    SetStatusText(table.getFileName());
 
     Bind(wxEVT_MENU, &MyFrame::OnNew, this, ID_New);
-    Bind(wxEVT_MENU, &MyFrame::AddRecord, this, ID_AddRecord);
-    Bind(wxEVT_MENU, &MyFrame::AddAttribute, this, ID_AddAttribute);
-    Bind(wxEVT_MENU, &MyFrame::DeleteRecord, this, ID_DeleteRecord);
-    Bind(wxEVT_MENU, &MyFrame::DeleteAttribute, this, ID_DeleteAttribute);
-    Bind(wxEVT_MENU, &MyFrame::SetTableName, this, ID_SetTableName);
-    Bind(wxEVT_MENU, &MyFrame::RenameAttribute, this, ID_RenameAttribute);
+    Bind(wxEVT_MENU, &MyFrame::AddRow, this, ID_AddRow);
+    Bind(wxEVT_MENU, &MyFrame::AddColumn, this, ID_AddColumn);
+    Bind(wxEVT_MENU, &MyFrame::DeleteRow, this, ID_DeleteRow);
+    Bind(wxEVT_MENU, &MyFrame::DeleteColumn, this, ID_DeleteColumn);
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+    Bind(wxEVT_MENU, &MyFrame::ChangeDelimiter, this, ID_ChangeDelimiter);
 
     Bind(wxEVT_CLOSE_WINDOW, &MyFrame::OnCloseWindow, this);
 
@@ -134,19 +132,19 @@ void MyFrame::OnOpen(wxCommandEvent& event) {
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
     wxString filePath = openFileDialog.GetPath();
-    table.readTableFile(filePath.ToStdString());
-    size_t numRows = table.getRecordSize();
-    size_t numCols = table.getAttributeSize();
+    table.readTableFile(filePath.ToStdString(), delimiter);
+    size_t numRows = table.getRowSize();
+    size_t numCols = table.getColumnSize();
     grid->DeleteRows(0, grid->GetNumberRows());
     grid->DeleteCols(0, grid->GetNumberCols());
     grid->AppendRows(numRows);
     grid->AppendCols(numCols);
     DrawGrid();
-    SetStatusText(table.getEntityName());
+    SetStatusText(table.getFileName());
 }
 
 void MyFrame::SaveFile() {
-    wxString wildcard = "Text files (*.txt)|*.txt";
+    wxString wildcard = "CSV file (*.csv)|*.csv";
     wxFileDialog saveFileDialog(this, _("Save File"), "", "", wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
     wxString filePath = saveFileDialog.GetPath();
@@ -158,45 +156,45 @@ void MyFrame::OnSave(wxCommandEvent& event) {
 }
 
 void MyFrame::DrawGrid() {
-    int numColumns = table.getAttributeSize();
+    int numColumns = table.getColumnSize();
     int windowWidth, windowHeight;
     GetClientSize(&windowWidth, &windowHeight);
-    int columnWidth = windowWidth / (numColumns == 0 ? 1 : numColumns) - grid->GetDefaultRowLabelSize() / (numColumns == 0 ? 1 : numColumns) - 17 / (numColumns == 0 ? 1 : numColumns);
     for (size_t i = 0; i < numColumns; ++i) {
-        grid->SetColSize(i, columnWidth);
-        grid->SetColLabelValue(i, table.getAttributeName(i));
+        std::string labelName;
+        size_t tmp = i + 1;
+        while (tmp > 0) {
+            char letter = (tmp - 1) % 26 + 'A';
+            tmp = (tmp - 1)  / 26;
+            labelName = letter + labelName;
+        } 
+        grid->SetColLabelValue(i, labelName);
     }
-    for (size_t i = 0; i < table.getRecordSize(); ++i) {
+    for (size_t i = 0; i < table.getRowSize(); ++i) {
         for (size_t j = 0; j < numColumns; ++j) {
-            grid->SetCellValue(i, j, table.getAttribute(i, j));
+            grid->SetCellValue(i, j, table.getCellValue(i, j));
         }
     }
     grid->SetScrollRate(16, 16);
     size_t gridRowSize = 0;
-    for (size_t i = 0; i < table.getRecordSize(); ++i) {
+    for (size_t i = 0; i < table.getRowSize(); ++i) {
         gridRowSize += grid->GetRowSize(i);
     }
     grid->SetVirtualSize(windowWidth, gridRowSize ? gridRowSize : 1);
     grid->SetSize(windowWidth, windowHeight);
     CreateStatusBar();
-    SetStatusText(table.getEntityName());
+    SetStatusText(table.getFileName());
 }
 
-void MyFrame::AddRecord(wxCommandEvent& event) {
-    size_t newRowIndex = table.getRecordSize();
-    table.addRecord();
+void MyFrame::AddRow(wxCommandEvent& event) {
+    size_t newRowIndex = table.getRowSize();
+    table.addRow();
     grid->InsertRows(newRowIndex);
     DrawGrid();
 }
 
-void MyFrame::AddAttribute(wxCommandEvent& event) {
-    wxTextEntryDialog dialog(this, "Enter Attribute Name", "Title", "");
-
-    if (dialog.ShowModal() == wxID_CANCEL)
-        return;
-    wxString name = dialog.GetValue();
-    size_t newColumnIndex = table.getAttributeSize() ;
-    table.addAttribute(name.ToStdString());
+void MyFrame::AddColumn(wxCommandEvent& event) {
+    size_t newColumnIndex = table.getColumnSize() ;
+    table.addColumn();
     grid->InsertCols(newColumnIndex);
     DrawGrid();
 }
@@ -205,68 +203,50 @@ void MyFrame::OnCellChanged(wxGridEvent& event) {
     size_t recordIndex = event.GetRow();
     size_t attributeIndex = event.GetCol();
     wxString newValue = grid->GetCellValue(recordIndex, attributeIndex);
-    table.setAttribute(recordIndex, attributeIndex, newValue.ToStdString());
+    table.setCellValue(recordIndex, attributeIndex, newValue.ToStdString());
     DrawGrid();
 }
 
-void MyFrame::DeleteRecord(wxCommandEvent& event) {
+void MyFrame::DeleteRow(wxCommandEvent& event) {
     wxTextEntryDialog dialog(this, "Enter Record Index (starting from 0)", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
     wxString indexStr = dialog.GetValue();
     long recordIndex;
-    if (!indexStr.ToLong(&recordIndex) || recordIndex < 0 || recordIndex >= static_cast<long>(table.getRecordSize())) {
-        wxMessageBox("Invalid record index", "Error", wxOK | wxICON_ERROR);
+    if (!indexStr.ToLong(&recordIndex) || recordIndex < 0 || recordIndex >= static_cast<long>(table.getRowSize())) {
+        wxMessageBox("Invalid row index", "Error", wxOK | wxICON_ERROR);
         return;
     }
-    table.deleteRecord(static_cast<size_t>(recordIndex));
+    table.deleteRow(static_cast<size_t>(recordIndex));
     grid->DeleteRows(recordIndex);
     DrawGrid();
 }
-void MyFrame::DeleteAttribute(wxCommandEvent& event) {
-    wxTextEntryDialog dialog(this, "Enter Attribute Index (starting from 0)", "Title", "");
+void MyFrame::DeleteColumn(wxCommandEvent& event) {
+    wxTextEntryDialog dialog(this, "Enter column Index (starting from 0)", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
 
     wxString indexStr = dialog.GetValue();
     long attributeIndex;
-    if (!indexStr.ToLong(&attributeIndex) || attributeIndex < 0 || attributeIndex >= static_cast<long>(table.getAttributeSize())) {
-        wxMessageBox("Invalid attribute index", "Error", wxOK | wxICON_ERROR);
+    if (!indexStr.ToLong(&attributeIndex) || attributeIndex < 0 || attributeIndex >= static_cast<long>(table.getColumnSize())) {
+        wxMessageBox("Invalid column index", "Error", wxOK | wxICON_ERROR);
         return;
     }
 
-    table.deleteAttribute(static_cast<size_t>(attributeIndex));
+    table.deleteColumn(static_cast<size_t>(attributeIndex));
     grid->DeleteCols(attributeIndex);
     DrawGrid();
 }
 
-void MyFrame::SetTableName(wxCommandEvent& event) {
-    wxTextEntryDialog dialog(this, "Enter Table Name", "Title", "");
+void MyFrame::ChangeDelimiter(wxCommandEvent& event) {
+    wxTextEntryDialog dialog(this, "Enter delimiter", "Title", "");
 
     if (dialog.ShowModal() == wxID_CANCEL)
         return;
-    wxString name = dialog.GetValue();
-    table.setEntityName(name.ToStdString());
-    SetStatusText(table.getEntityName());
-}
 
-void MyFrame::RenameAttribute(wxCommandEvent& event) {
-    wxTextEntryDialog dialogIndex(this, "Enter Attribute Index (starting from 0)", "Title", "");
-    if (dialogIndex.ShowModal() == wxID_CANCEL)
-        return;
-    wxString index = dialogIndex.GetValue();
-    int attributeIndex;
-    index.ToInt(&attributeIndex);
-    if (attributeIndex >= table.getAttributeSize() || attributeIndex < 0) {
-        DrawGrid();
-        return;
-    }
-    wxTextEntryDialog dialog(this, "Enter Attribute Name", "Title", "");
-    if (dialog.ShowModal() == wxID_CANCEL)
-        return;
-    wxString name = dialog.GetValue();
-    table.renameAttribute(attributeIndex, name.ToStdString());
-    DrawGrid();
+    wxString delimiterStr = dialog.GetValue();
+    table.setDilimiter(delimiterStr[0]);
+    delimiter = delimiterStr[0];
 }
